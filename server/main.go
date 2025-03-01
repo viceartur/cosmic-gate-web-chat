@@ -3,6 +3,7 @@ package main
 import (
 	"cosmic-gate-chat/v2/config"
 	"cosmic-gate-chat/v2/controllers"
+	"cosmic-gate-chat/v2/websocket"
 	"log"
 	"net/http"
 
@@ -29,5 +30,9 @@ func main() {
 	router.HandleFunc("/users", controllers.CreateUser).Methods("POST")
 	router.HandleFunc("/users", controllers.GetUser).Methods("GET")
 
+	// WebSocket
+	router.HandleFunc("/ws/{senderId}", websocket.HandleWebSocket)
+
+	log.Println("Server running on port: 8080")
 	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(origins, methods, headers)(router)))
 }

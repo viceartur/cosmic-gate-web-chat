@@ -2,7 +2,6 @@ package config
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
@@ -21,7 +20,7 @@ func InitMongoDB() {
 		log.Fatalf("Error connecting to MongoDB: %v", err)
 	}
 	MongoClient = client
-	fmt.Println("MongoDB connected")
+	log.Println("MongoDB connected")
 }
 
 func GetMongoDBClient() *mongo.Client {
