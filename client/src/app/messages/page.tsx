@@ -4,17 +4,18 @@ import Messsages from "@/components/messages";
 import { useEffect, useState } from "react";
 
 export default function MessagesPage() {
-  const [userId, setUserId] = useState<number>(1);
+  const [userId, setUserId] = useState<number>(0);
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
     const handleConnectSocket = () => {
+      const userId = Math.round(Math.random() * 1000);
+      setUserId(userId);
       const socket = new WebSocket(`ws://localhost:8080/ws/${userId}`);
 
       socket.onopen = () => {
         const obj = {
           type: "chat-connection",
-          message: "user connected",
         };
         const jsonString = JSON.stringify(obj);
         socket.send(jsonString);
@@ -31,8 +32,11 @@ export default function MessagesPage() {
 
   return (
     <>
-      <h1>Messages Page</h1>
-      <Messsages socket={socket} />
+      <div className="section-headers">
+        <h1>Messages Page</h1>
+        <h3>Your User ID: {userId}</h3>
+      </div>
+      <Messsages socket={socket} userId={userId} />
     </>
   );
 }
