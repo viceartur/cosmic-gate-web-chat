@@ -1,21 +1,23 @@
 "use client";
 
 import Messsages from "@/components/messages";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function MessagesPage() {
-  const [userId, setUserId] = useState<number>(0);
+  const { userIds }: { userIds: Array<string> } = useParams();
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
     const handleConnectSocket = () => {
-      const userId = Math.round(Math.random() * 1000);
-      setUserId(userId);
-      const socket = new WebSocket(`ws://localhost:8080/ws/${userId}`);
+      // Temp solution. Once Auth is created, then user is defined.
+      const socket = new WebSocket(`ws://localhost:8080/ws/${userIds[0]}`);
 
+      // Send WebSocket that User connected to the chat.
       socket.onopen = () => {
         const obj = {
           type: "chat-connection",
+          recipientId: Number(userIds[1]),
         };
         const jsonString = JSON.stringify(obj);
         socket.send(jsonString);
@@ -34,9 +36,10 @@ export default function MessagesPage() {
     <>
       <div className="section-headers">
         <h1>Messages Page</h1>
-        <h3>Your User ID: {userId}</h3>
+        <h3>Your User ID: {userIds[0]}</h3>
+        <h3>Chatting with: {userIds[1]}</h3>
       </div>
-      <Messsages socket={socket} userId={userId} />
+      <Messsages socket={socket} userId={userIds[0]} friendId={userIds[1]} />
     </>
   );
 }

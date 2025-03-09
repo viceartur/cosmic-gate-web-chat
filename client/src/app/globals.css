@@ -11,6 +11,10 @@ body {
 }
 
 .section-headers {
+  padding: 10px;
+  background-color: #f0f8ff;
+  border: 2px solid #2196f3;
+  border-radius: 4px;
   color: #1976d2;
   margin: 10px;
 }
@@ -22,77 +26,72 @@ body {
   height: 500px;
   display: flex;
   flex-direction: column;
-  background-color: #f0f8ff; /* Light blue background */
+  background-color: #f0f8ff;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
 
-/* Messages area (where messages appear) */
-.messages__area {
-  flex: 1;
-  padding: 10px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+  /* Messages area (where messages appear) */
+  .messages__area {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 
-/* Individual message */
-.messages__message {
-  padding: 8px 12px;
-  border-radius: 8px;
-  max-width: 75%;
-  word-wrap: break-word;
-  font-size: 14px;
-  font-family: Arial, sans-serif;
-}
+    /* Individual message */
+    .messages__message {
+      padding: 8px 12px;
+      border-radius: 8px;
+      max-width: 75%;
+      word-wrap: break-word;
 
-/* Messages from the user */
-.messages__message--sent {
-  background-color: #2196f3; /* Light blue */
-  color: white;
-  align-self: flex-end;
-}
+      /* Messages from the user */
+      &.messages__message--sent {
+        background-color: #2196f3;
+        color: white;
+        align-self: flex-end;
+      }
 
-/* Messages from others */
-.messages__message--received {
-  background-color: #ffffff;
-  color: #000;
-  align-self: flex-start;
-  border: 1px solid #ddd;
-}
+      /* Messages from others */
+      &.messages__message--received {
+        background-color: #ffffff;
+        color: #000;
+        align-self: flex-start;
+        border: 1px solid #ddd;
+      }
+    }
+  }
+  /* Input and button container */
+  .messages__actions {
+    display: flex;
+    padding: 10px;
+    background-color: #e3f2fd;
+    border-top: 1px solid #ddd;
 
-/* Input and button container */
-.messages__actions {
-  display: flex;
-  padding: 10px;
-  background-color: #e3f2fd;
-  border-top: 1px solid #ddd;
-}
+    /* Input field */
+    .messages__input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      outline: none;
+    }
 
-/* Input field */
-.messages__input {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  outline: none;
-  font-size: 14px;
-}
+    /* Send button */
+    .messages__button {
+      background-color: #2196f3;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      margin-left: 8px;
+      border-radius: 5px;
+      cursor: pointer;
 
-/* Send button */
-.messages__button {
-  background-color: #2196f3;
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  margin-left: 8px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.messages__button:hover {
-  background-color: #1976d2;
+      &:hover {
+        background-color: #1976d2;
+      }
+    }
+  }
 }

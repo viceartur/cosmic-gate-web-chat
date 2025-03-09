@@ -1,14 +1,27 @@
 import { useEffect, useState } from "react";
 
+import { fetchMessages } from "@/actions/messages";
+
 export default function Messsages(props: any) {
-  const { socket, userId } = props;
-  const [messages, setMessages] = useState<object[]>([]);
+  const { socket, userId, friendId } = props;
+  const [messages, setMessages] = useState<
+    { senderId: number; data: string }[]
+  >([]);
   const [message, setMessage] = useState<object | any>({
     senderId: 0,
     data: "",
   });
 
-  // WebSocket Connection and Listening Events
+  // Get Message History for Users
+  useEffect(() => {
+    const getMessages = async () => {
+      const messages = await fetchMessages(userId, friendId);
+      setMessages(messages);
+    };
+    getMessages();
+  }, []);
+
+  // WebSocket Connection and Handle Messages
   useEffect(() => {
     if (socket) {
       socket.onmessage = (event: MessageEvent) => {
@@ -33,8 +46,8 @@ export default function Messsages(props: any) {
 
     const obj = {
       type: "chat-message",
-      senderId: userId,
-      receiverId: 0,
+      senderId: Number(userId), // auth ID
+      recipientId: Number(friendId), // friend ID
       data: message.data,
     };
     const jsonString = JSON.stringify(obj);
@@ -46,7 +59,7 @@ export default function Messsages(props: any) {
   };
 
   const onInputChange = (e: any) => {
-    setMessage({ senderId: userId, data: e.target.value });
+    setMessage({ senderId: Number(userId), data: e.target.value });
   };
 
   const sendMessage = () => {
@@ -60,12 +73,12 @@ export default function Messsages(props: any) {
           <div
             key={i}
             className={`messages__message ${
-              m.senderId === userId
+              m.senderId === Number(userId)
                 ? "messages__message--sent"
                 : "messages__message--received"
             }`}
           >
-            {m.senderId} : {m.data}
+            {m.senderId}: {m.data}
           </div>
         ))}
       </div>

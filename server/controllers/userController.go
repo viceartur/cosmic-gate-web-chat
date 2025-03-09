@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"context"
-	"cosmic-gate-chat/v2/config"
-	"cosmic-gate-chat/v2/models"
+	"cosmic-gate-chat/config"
+	"cosmic-gate-chat/models"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+// Add New User to the Database
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	client := config.GetMongoDBClient()
 	userCollection := client.Database("cosmic-gate-db").Collection("users")
@@ -38,6 +39,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
+// Get User from Database by UserName
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	client := config.GetMongoDBClient()
 	userCollection := client.Database("cosmic-gate-db").Collection("users")

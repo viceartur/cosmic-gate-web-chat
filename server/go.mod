@@ -1,4 +1,4 @@
-module cosmic-gate-chat/v2
+module cosmic-gate-chat
 
 go 1.23.4
 

@@ -23,6 +23,7 @@ func InitMongoDB() {
 	log.Println("MongoDB connected")
 }
 
+// Returns the pointer to Mongo Client Connection
 func GetMongoDBClient() *mongo.Client {
 	return MongoClient
 }

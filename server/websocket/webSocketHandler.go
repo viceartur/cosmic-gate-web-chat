@@ -1,21 +1,24 @@
 package websocket
 
 import (
+	"cosmic-gate-chat/models"
+	"cosmic-gate-chat/services"
 	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
 
 type MessageWS struct {
-	Type       string `json:"type"`
-	SenderID   int    `json:"senderId,omitempty"`
-	ReceiverID int    `json:"receiverId,omitempty"`
-	Data       string `json:"data"`
+	Type        string `json:"type"`
+	SenderID    int    `json:"senderId,omitempty"`
+	RecipientID int    `json:"recipientId,omitempty"`
+	Data        string `json:"data"`
 }
 
 var upgrader = websocket.Upgrader{
@@ -47,6 +50,7 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	go reader(id, ws)
 }
 
+// Store a Client Connection
 func addClient(clientId int, conn *websocket.Conn) {
 	clientsMutex.Lock()
 	defer clientsMutex.Unlock()
@@ -54,6 +58,7 @@ func addClient(clientId int, conn *websocket.Conn) {
 	log.Println(clientId, "connected")
 }
 
+// Handle Incoming WS Messages
 func reader(userId int, conn *websocket.Conn) {
 	for {
 		_, p, err := conn.ReadMessage()
@@ -67,13 +72,13 @@ func reader(userId int, conn *websocket.Conn) {
 
 		log.Println("Reader msg: ", string(p))
 		jsonData := string(p)
-
 		var message MessageWS
 		err = json.Unmarshal([]byte(jsonData), &message)
 		if err != nil {
 			log.Println("WS Reader error parsing JSON: ", err)
 		}
 
+		// Based on Message Type handle the Message
 		if message.Type == "chat-connection" {
 			handleChatConnection(userId, message)
 		} else if message.Type == "chat-message" {
@@ -82,41 +87,39 @@ func reader(userId int, conn *websocket.Conn) {
 	}
 }
 
+// Notify the Client that Recipient connected to the chat.
 func handleChatConnection(userId int, message MessageWS) {
-	// TEMP:
-	// Broadcast the message for all clients besides the active one
-	msg := MessageWS{Type: message.Type, SenderID: userId, Data: "joined to the chat"}
-
 	clientsMutex.Lock()
 	defer clientsMutex.Unlock()
 
-	jsonMsg, err := json.Marshal(msg)
+	// Convert Notification into JSON
+	messageToSend := MessageWS{
+		Type:        message.Type,
+		SenderID:    userId,
+		RecipientID: message.RecipientID,
+		Data:        "joined to the chat",
+	}
+	jsonMessage, err := json.Marshal(messageToSend)
 	if err != nil {
 		log.Println(err)
 	}
 
-	for clientId, client := range clients {
-		// TEMP:
-		// Match only the clients besides the sender
-		if clientId == userId {
-			continue
-		}
+	// Find a Recipient in the Connections
+	client, ok := clients[message.RecipientID]
+	if !ok {
+		log.Println("Recipient not connected yet. ID:", message.RecipientID)
+		return
+	}
 
-		log.Println("sending to:", clientId)
-
-		err := client.WriteMessage(websocket.TextMessage, jsonMsg)
-		if err != nil {
-			log.Println("WS Broadcast WriteMessage error:", err)
-			// client.Close()
-			// delete(clients, userId)
-		}
-
+	// Send Notification to the Recipient
+	err = client.WriteMessage(websocket.TextMessage, jsonMessage)
+	if err != nil {
+		log.Println("WS Broadcast WriteMessage error:", err)
 	}
 }
 
+// Send Message from the Client to Recipient.
 func handleChatMessage(userId int, message MessageWS) {
-	// TEMP:
-	// Broadcast the message for all clients besides the active one
 	clientsMutex.Lock()
 	defer clientsMutex.Unlock()
 
@@ -125,21 +128,26 @@ func handleChatMessage(userId int, message MessageWS) {
 		log.Println(err)
 	}
 
-	for clientId, client := range clients {
-		// TEMP:
-		// Match only the clients besides the sender
-		if clientId == userId {
-			continue
-		}
+	// Save Message into DB
+	messageToSave := models.Message{
+		SenderID:    userId,
+		RecipientID: message.RecipientID,
+		Text:        message.Data,
+		SentAt:      time.Now(),
+	}
+	go services.SaveMessage(messageToSave)
 
-		log.Println("sending to:", clientId)
+	// Find a Recipient in the Connections
+	client, ok := clients[message.RecipientID]
+	if !ok {
+		log.Println("Recipient not connected yet. ID:", message.RecipientID)
+		return
+	}
 
-		err := client.WriteMessage(websocket.TextMessage, jsonMsg)
-		if err != nil {
-			log.Println("WS Broadcast WriteMessage error:", err)
-			// client.Close()
-			// delete(clients, userId)
-		}
+	// Send Message to the Recipient
+	err = client.WriteMessage(websocket.TextMessage, jsonMsg)
+	if err != nil {
+		log.Println("WS Broadcast WriteMessage error:", err)
 
 	}
 }

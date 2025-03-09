@@ -1,9 +1,9 @@
 package main
 
 import (
-	"cosmic-gate-chat/v2/config"
-	"cosmic-gate-chat/v2/controllers"
-	"cosmic-gate-chat/v2/websocket"
+	"cosmic-gate-chat/config"
+	"cosmic-gate-chat/controllers"
+	"cosmic-gate-chat/websocket"
 	"log"
 	"net/http"
 
@@ -29,6 +29,8 @@ func main() {
 	// Routes
 	router.HandleFunc("/users", controllers.CreateUser).Methods("POST")
 	router.HandleFunc("/users", controllers.GetUser).Methods("GET")
+
+	router.HandleFunc("/messages", controllers.GetMessages).Methods("GET")
 
 	// WebSocket
 	router.HandleFunc("/ws/{senderId}", websocket.HandleWebSocket)
