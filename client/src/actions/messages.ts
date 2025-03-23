@@ -2,11 +2,12 @@
 
 import { API, Message } from "@/utils/constants";
 
-export async function fetchMessages(senderId: number, recipientId: number) {
+// Fetch messages between two users
+export async function fetchMessages(senderId: string, recipientId: string) {
   try {
     const queryParams = new URLSearchParams({
-      senderId: String(senderId),
-      recipientId: String(recipientId),
+      senderId,
+      recipientId,
     });
     const result = await fetch(`${API}/messages?${queryParams.toString()}`);
     const data = await result.json();

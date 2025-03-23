@@ -10,6 +10,56 @@ body {
   align-items: center;
 }
 
+/* Navigation Bar */
+nav {
+  width: 100px;
+  height: 30vh;
+  background-color: #f0f8ff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  & a {
+    text-align: left;
+    color: #1976d2;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+
+    &:hover {
+      background-color: #e3f2fd;
+      color: #2196f3;
+    }
+  }
+
+  & button {
+    text-align: left;
+    background-color: #2196f3;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: #1976d2;
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
 .section-headers {
   padding: 10px;
   background-color: #f0f8ff;
@@ -91,6 +141,78 @@ body {
 
       &:hover {
         background-color: #1976d2;
+      }
+    }
+  }
+}
+
+/* Form Styles */
+.sign-in-form {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  background-color: #f0f8ff;
+  border: 2px solid #2196f3;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+
+  /* Input Fields */
+  .input-field {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    margin-bottom: 10px;
+  }
+
+  .input-field:focus {
+    border-color: #2196f3;
+  }
+
+  /* Submit Button */
+  .submit-button {
+    background-color: #2196f3;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+
+    &:disabled {
+      background-color: #b3d7ff;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: #1976d2;
+    }
+  }
+
+  /* Error Message */
+  .error-message {
+    color: #d32f2f;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  /* Sign Up Link */
+  .sign-up-link {
+    text-align: center;
+    font-size: 14px;
+
+    &.a {
+      color: #2196f3;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
       }
     }
   }
