@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -17,8 +16,8 @@ func GetMessages(w http.ResponseWriter, r *http.Request) {
 	client := config.GetMongoDBClient()
 	messageCollection := client.Database("cosmic-gate-db").Collection("messages")
 
-	senderId, _ := strconv.Atoi(r.URL.Query().Get("senderId"))
-	recipientId, _ := strconv.Atoi(r.URL.Query().Get("recipientId"))
+	senderId := r.URL.Query().Get("senderId")
+	recipientId := r.URL.Query().Get("recipientId")
 
 	// Find all messages for users
 	cursor, err := messageCollection.Find(context.Background(), bson.M{

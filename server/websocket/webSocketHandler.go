@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 
@@ -16,8 +15,8 @@ import (
 
 type MessageWS struct {
 	Type        string `json:"type"`
-	SenderID    int    `json:"senderId,omitempty"`
-	RecipientID int    `json:"recipientId,omitempty"`
+	SenderID    string `json:"senderId,omitempty"`
+	RecipientID string `json:"recipientId,omitempty"`
 	Data        string `json:"data"`
 }
 
@@ -25,7 +24,7 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 }
-var clients = make(map[int]*websocket.Conn)
+var clients = make(map[string]*websocket.Conn)
 var clientsMutex sync.Mutex
 
 // The method handles WebSocket Requests
@@ -41,17 +40,16 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	// Take out the Sender ID from parameters
 	vars := mux.Vars(r)
 	senderId := vars["senderId"]
-	id, _ := strconv.Atoi(senderId)
 
 	// Add connected Sender ID as a Client
-	addClient(id, ws)
+	addClient(senderId, ws)
 
 	// Read Incoming Messages
-	go reader(id, ws)
+	go reader(senderId, ws)
 }
 
 // Store a Client Connection
-func addClient(clientId int, conn *websocket.Conn) {
+func addClient(clientId string, conn *websocket.Conn) {
 	clientsMutex.Lock()
 	defer clientsMutex.Unlock()
 	clients[clientId] = conn
@@ -59,7 +57,7 @@ func addClient(clientId int, conn *websocket.Conn) {
 }
 
 // Handle Incoming WS Messages
-func reader(userId int, conn *websocket.Conn) {
+func reader(userId string, conn *websocket.Conn) {
 	for {
 		_, p, err := conn.ReadMessage()
 		if err != nil {
@@ -71,6 +69,7 @@ func reader(userId int, conn *websocket.Conn) {
 		}
 
 		log.Println("Reader msg: ", string(p))
+
 		jsonData := string(p)
 		var message MessageWS
 		err = json.Unmarshal([]byte(jsonData), &message)
@@ -88,7 +87,7 @@ func reader(userId int, conn *websocket.Conn) {
 }
 
 // Notify the Client that Recipient connected to the chat.
-func handleChatConnection(userId int, message MessageWS) {
+func handleChatConnection(userId string, message MessageWS) {
 	clientsMutex.Lock()
 	defer clientsMutex.Unlock()
 
@@ -119,7 +118,7 @@ func handleChatConnection(userId int, message MessageWS) {
 }
 
 // Send Message from the Client to Recipient.
-func handleChatMessage(userId int, message MessageWS) {
+func handleChatMessage(userId string, message MessageWS) {
 	clientsMutex.Lock()
 	defer clientsMutex.Unlock()
 

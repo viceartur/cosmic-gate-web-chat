@@ -4,11 +4,10 @@ import (
 	"context"
 	"cosmic-gate-chat/config"
 	"cosmic-gate-chat/models"
+	"cosmic-gate-chat/services"
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 // Add New User to the Database
@@ -17,15 +16,21 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	userCollection := client.Database("cosmic-gate-db").Collection("users")
 
 	var userRequest models.User
-
 	if err := json.NewDecoder(r.Body).Decode(&userRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	hashPassword, err := HashPassword(userRequest.Password)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error hashing a password: %v", err), http.StatusInternalServerError)
 		return
 	}
 
 	user := &models.User{
 		Username: userRequest.Username,
 		Email:    userRequest.Email,
+		Password: hashPassword,
 	}
 
 	// Insert into MongoDB
@@ -39,17 +44,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-// Get User from Database by UserName
+// Get User from Database by Email
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	client := config.GetMongoDBClient()
-	userCollection := client.Database("cosmic-gate-db").Collection("users")
-
-	username := r.URL.Query().Get("username")
-
-	var user models.User
-	err := userCollection.FindOne(context.Background(), bson.M{"username": username}).Decode(&user)
+	email := r.URL.Query().Get("email")
+	user, err := services.GetUserFromDB(email)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error fetching user: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error inserting user: %v", err), http.StatusInternalServerError)
 		return
 	}
 

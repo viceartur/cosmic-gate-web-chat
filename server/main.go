@@ -27,6 +27,8 @@ func main() {
 	headers := handlers.AllowedHeaders([]string{"Content-Type", "Authorization"})
 
 	// Routes
+	router.HandleFunc("/auth", controllers.AuthUser).Methods("POST")
+
 	router.HandleFunc("/users", controllers.CreateUser).Methods("POST")
 	router.HandleFunc("/users", controllers.GetUser).Methods("GET")
 
