@@ -32,6 +32,8 @@ func main() {
 	router.HandleFunc("/users", controllers.CreateUser).Methods("POST")
 	router.HandleFunc("/users", controllers.GetUser).Methods("GET")
 
+	router.HandleFunc("/user/friends", controllers.GetUserFriends).Methods("GET")
+
 	router.HandleFunc("/messages", controllers.GetMessages).Methods("GET")
 
 	// WebSocket

@@ -62,13 +62,16 @@ func reader(userId string, conn *websocket.Conn) {
 		_, p, err := conn.ReadMessage()
 		if err != nil {
 			log.Println("ReadMessage error:", err)
-			clients[userId].Close()
-			delete(clients, userId)
-			log.Println("Client closed and removed: ", userId)
+
+			// Check whether the User Connection exists
+			if _, ok := clients[userId]; ok {
+				clients[userId].Close() // close connection
+				delete(clients, userId) // remove connection
+				log.Println("Client closed and removed: ", userId)
+			}
+
 			return
 		}
-
-		log.Println("Reader msg: ", string(p))
 
 		jsonData := string(p)
 		var message MessageWS

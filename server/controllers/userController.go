@@ -49,7 +49,19 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	email := r.URL.Query().Get("email")
 	user, err := services.GetUserFromDB(email)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error inserting user: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error getting user: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(user)
+}
+
+// Get User Friends from Database by User ID
+func GetUserFriends(w http.ResponseWriter, r *http.Request) {
+	userId := r.URL.Query().Get("userId")
+	user, err := services.GetUserFriendsFromDB(userId)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error getting user: %v", err), http.StatusInternalServerError)
 		return
 	}
 
