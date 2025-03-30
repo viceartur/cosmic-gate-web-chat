@@ -1,6 +1,7 @@
 * {
   padding: 0;
   margin: 0;
+  box-sizing: border-box;
 }
 
 body {
@@ -8,71 +9,110 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  font-size: 1.1rem;
+  background-color: #eaf6ff;
+}
+
+button {
+  font-size: 1.1rem;
+  margin: 0.5rem;
+  background-color: #2196f3;
+  color: white;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #1976d2;
+  }
+
+  &:focus {
+    outline: none;
+  }
 }
 
 /* Navigation Bar */
 nav {
-  width: 100px;
-  height: 30vh;
+  width: 10rem;
+  height: fit-content;
   background-color: #f0f8ff;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   padding: 20px;
   box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
   position: fixed;
-  top: 0;
+  top: 10rem;
   left: 0;
 
   & a {
-    text-align: left;
+    margin: 0.5rem;
+    text-align: center;
     color: #1976d2;
     text-decoration: none;
-    font-size: 16px;
     font-weight: bold;
     padding: 8px 15px;
     border-radius: 5px;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: 0.3s ease;
 
     &:hover {
       background-color: #e3f2fd;
       color: #2196f3;
     }
   }
+}
 
-  & button {
-    text-align: left;
-    background-color: #2196f3;
-    color: white;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+section {
+  width: 100%;
+  padding: 3rem 5rem 5rem 15rem; /* top right bottom left */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
-    &:hover {
-      background-color: #1976d2;
-    }
-
-    &:focus {
-      outline: none;
-    }
+  /* Section Headers */
+  .section-headers {
+    padding: 10px;
+    background-color: #f0f8ff;
+    border: 2px solid #2196f3;
+    border-radius: 4px;
+    color: #1976d2;
+    margin: 10px;
+    font-weight: bold;
   }
 }
 
-.section-headers {
-  padding: 10px;
-  background-color: #f0f8ff;
-  border: 2px solid #2196f3;
-  border-radius: 4px;
-  color: #1976d2;
-  margin: 10px;
+/* Friends List */
+.friends-list {
+  display: flex;
+  flex-direction: column;
+  width: 20rem;
+
+  /* Friend Card */
+  .friend-card {
+    margin: 1rem 0 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background-color: #f0f8ff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .friend-name {
+    font-weight: 600;
+    color: #444;
+  }
 }
 
-/* Main chat container */
+/* Main Chat Container */
 .messages {
-  width: 400px;
+  width: 30rem;
   max-width: 100%;
+  min-width: 20rem;
   height: 500px;
   display: flex;
   flex-direction: column;
@@ -81,7 +121,6 @@ nav {
   overflow: hidden;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 
-  /* Messages area (where messages appear) */
   .messages__area {
     flex: 1;
     padding: 10px;
@@ -90,21 +129,19 @@ nav {
     flex-direction: column;
     gap: 8px;
 
-    /* Individual message */
     .messages__message {
       padding: 8px 12px;
       border-radius: 8px;
       max-width: 75%;
       word-wrap: break-word;
+      transition: 0.3s ease;
 
-      /* Messages from the user */
       &.messages__message--sent {
         background-color: #2196f3;
         color: white;
         align-self: flex-end;
       }
 
-      /* Messages from others */
       &.messages__message--received {
         background-color: #ffffff;
         color: #000;
@@ -113,14 +150,13 @@ nav {
       }
     }
   }
-  /* Input and button container */
+
   .messages__actions {
     display: flex;
     padding: 10px;
     background-color: #e3f2fd;
     border-top: 1px solid #ddd;
 
-    /* Input field */
     .messages__input {
       flex: 1;
       padding: 8px;
@@ -128,26 +164,12 @@ nav {
       border-radius: 5px;
       outline: none;
     }
-
-    /* Send button */
-    .messages__button {
-      background-color: #2196f3;
-      color: white;
-      border: none;
-      padding: 8px 15px;
-      margin-left: 8px;
-      border-radius: 5px;
-      cursor: pointer;
-
-      &:hover {
-        background-color: #1976d2;
-      }
-    }
   }
 }
 
 /* Form Styles */
 .sign-in-form {
+  margin: 5rem;
   width: 100%;
   max-width: 400px;
   padding: 20px;
@@ -160,21 +182,19 @@ nav {
   gap: 15px;
   align-items: center;
 
-  /* Input Fields */
   .input-field {
-    width: 100%;
+    width: 20rem;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
     outline: none;
-    margin-bottom: 10px;
+    transition: border-color 0.3s ease;
+
+    &:focus {
+      border-color: #2196f3;
+    }
   }
 
-  .input-field:focus {
-    border-color: #2196f3;
-  }
-
-  /* Submit Button */
   .submit-button {
     background-color: #2196f3;
     color: white;
@@ -182,8 +202,8 @@ nav {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    width: 100%;
-    font-size: 16px;
+    width: fit-content;
+    transition: background-color 0.3s ease;
 
     &:disabled {
       background-color: #b3d7ff;
@@ -195,21 +215,18 @@ nav {
     }
   }
 
-  /* Error Message */
   .error-message {
     color: #d32f2f;
-    font-size: 14px;
     text-align: center;
   }
 
-  /* Sign Up Link */
   .sign-up-link {
     text-align: center;
-    font-size: 14px;
 
-    &.a {
+    a {
       color: #2196f3;
       text-decoration: none;
+      transition: text-decoration 0.3s ease;
 
       &:hover {
         text-decoration: underline;

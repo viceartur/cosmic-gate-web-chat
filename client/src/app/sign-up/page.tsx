@@ -3,7 +3,7 @@
 import { signUp } from "@/actions/auth";
 import { useState } from "react";
 
-export default function SignIn() {
+export default function SignUp() {
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
 

@@ -2,49 +2,48 @@
 
 import Messages from "@/components/messages";
 import { useSession } from "next-auth/react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function MessagesPage() {
-  const { data: session } = useSession();
+  const friendName = useSearchParams().get("username");
   const { friendId }: { friendId: string } = useParams();
+  const { data: session } = useSession();
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
     if (!session?.user.id) return;
 
-    const socket = new WebSocket(`ws://localhost:8080/ws/${session.user.id}`);
+    const ws = new WebSocket(`ws://localhost:8080/ws/${session.user.id}`);
 
-    // Send WebSocket that User connected to the chat.
-    socket.onopen = () => {
+    // Send WebSocket to a Friend that the User connected to the chat
+    ws.onopen = () => {
       const obj = {
         type: "chat-connection",
         recipientId: friendId,
       };
       const jsonString = JSON.stringify(obj);
-      socket.send(jsonString);
+      ws.send(jsonString);
     };
 
-    socket.onclose = () => {
+    ws.onclose = () => {
       console.log("WebSocket connection has been closed.");
     };
 
-    setSocket(socket);
+    setSocket(ws);
 
     // Close WebSocket once the component is unmounted
     return () => {
-      socket.close();
+      ws.close();
     };
-  }, [session?.user.id, friendId]);
+  }, [session?.user.id]);
 
   return (
-    <>
+    <section>
       <div className="section-headers">
-        <h1>Messages Page</h1>
-        <h3>Hey {session?.user.username}</h3>
-        <h3>You are chatting with: {friendId}</h3>
+        <h1>Chat with {friendName}</h1>
       </div>
       <Messages socket={socket} userId={session?.user.id} friendId={friendId} />
-    </>
+    </section>
   );
 }

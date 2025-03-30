@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { fetchMessages } from "@/actions/messages";
 
@@ -11,6 +11,14 @@ export default function Messages(props: any) {
     senderId: "",
     data: "",
   });
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Scroll to the Bottom on New Messages
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   // Get Message History for Users
   useEffect(() => {
@@ -81,20 +89,23 @@ export default function Messages(props: any) {
             {m.data}
           </div>
         ))}
+        <div ref={messagesEndRef} /> {/* Invisible div to scroll into view */}
       </div>
       <div className="messages__actions">
         <input
           className="messages__input"
           type="text"
           onChange={onInputChange}
-          placeholder="type any message"
+          placeholder="Type message..."
           value={message.data}
+          // Allow to send a Message by clicking on Enter
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              sendMessage();
+            }
+          }}
         />
-        <button
-          className="messages__button"
-          type="button"
-          onClick={sendMessage}
-        >
+        <button type="submit" onClick={sendMessage}>
           Send
         </button>
       </div>
