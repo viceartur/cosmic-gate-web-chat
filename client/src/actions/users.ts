@@ -15,3 +15,19 @@ export async function fetchUserFriends(userId: string) {
     return [];
   }
 }
+
+// Fetch all Users
+export async function fetchUsers(userId: string) {
+  try {
+    const result = await fetch(`${API}/users/all/${userId}`);
+    const users = await result.json();
+    if (!users?.length) {
+      return [];
+    }
+
+    return users;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}

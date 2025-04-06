@@ -83,14 +83,13 @@ section {
   }
 }
 
-/* Friends List */
-.friends-list {
+/* Friends/Users List */
+.users-list {
   display: flex;
   flex-direction: column;
-  width: 20rem;
+  width: 30rem;
 
-  /* Friend Card */
-  .friend-card {
+  .user-card {
     margin: 1rem 0 1rem 0;
     display: flex;
     align-items: center;
@@ -100,9 +99,25 @@ section {
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      background-color: #fdf9e3;
+      cursor: pointer;
+    }
+
+    .user-actions__buttons {
+      display: flex;
+      justify-content: space-between;
+
+      .friend-label {
+        color: #2196f3;
+        font-weight: bold;
+        align-content: center;
+      }
+    }
   }
 
-  .friend-name {
+  .user-name {
     font-weight: 600;
     color: #444;
   }

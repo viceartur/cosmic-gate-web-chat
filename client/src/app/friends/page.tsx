@@ -23,18 +23,22 @@ export default function FriendsPage() {
       <div className="section-headers">
         <h1>Your Friends List</h1>
       </div>
-      <div className="friends-list">
+      <div className="users-list">
         {friends.map((friend: any, i) => (
-          <div key={i} className="friend-card">
-            <span className="friend-name">{friend.username}</span>
-            <button
-              className="chat-button"
-              onClick={() =>
-                redirect(`/messages/${friend.id}?username=${friend.username}`)
-              }
-            >
-              Chat
-            </button>
+          <div key={i} className="user-card">
+            <span className="user-name">{friend.username}</span>
+            <div className="user-actions__buttons">
+              <button onClick={() => redirect(`/profiles/${friend.id}`)}>
+                Profile
+              </button>
+              <button
+                onClick={() =>
+                  redirect(`/messages/${friend.id}?username=${friend.username}`)
+                }
+              >
+                Chat
+              </button>
+            </div>
           </div>
         ))}
       </div>

@@ -11,7 +11,7 @@ export function NavBar() {
     <nav>
       <Link href="/">Main</Link>
       <Link href="/profile">Profile</Link>
-      <Link href="/people">People</Link>
+      <Link href="/users">People</Link>
       <Link href="/friend-requests">Friend Requests</Link>
       <Link href="/friends">Friends</Link>
       {session?.user && <button onClick={() => signOut()}>Sign Out</button>}
