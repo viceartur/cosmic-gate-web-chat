@@ -31,6 +31,7 @@ func main() {
 
 	router.HandleFunc("/users", controllers.CreateUser).Methods("POST")
 	router.HandleFunc("/users", controllers.GetUser).Methods("GET")
+	router.HandleFunc("/users/all/{userId}", controllers.GetAllUsers).Methods("GET")
 
 	router.HandleFunc("/user/friends", controllers.GetUserFriends).Methods("GET")
 

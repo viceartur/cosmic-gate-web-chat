@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 // Add New User to the Database
@@ -66,4 +68,17 @@ func GetUserFriends(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(user)
+}
+
+// Get all Users from Database
+func GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userId := vars["userId"]
+	users, err := services.GetUsersFromDB(userId)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error getting user: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(users)
 }

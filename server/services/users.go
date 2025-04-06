@@ -15,10 +15,12 @@ func GetUserFromDB(email string) (models.User, error) {
 	userCollection := client.Database("cosmic-gate-db").Collection("users")
 
 	var user models.User
-	err := userCollection.FindOne(context.Background(), bson.M{"email": email}).Decode(&user)
+	filter := bson.M{"email": email}
+	err := userCollection.FindOne(context.Background(), filter).Decode(&user)
 	if err != nil {
 		return models.User{}, err
 	}
+
 	return user, nil
 }
 
@@ -34,7 +36,8 @@ func GetUserFriendsFromDB(userID string) ([]models.User, error) {
 
 	// Find the user and get their friends list
 	var user models.User
-	err = userCollection.FindOne(context.Background(), bson.M{"_id": objID}).Decode(&user)
+	filterUser := bson.M{"_id": objID}
+	err = userCollection.FindOne(context.Background(), filterUser).Decode(&user)
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +46,10 @@ func GetUserFriendsFromDB(userID string) ([]models.User, error) {
 		return []models.User{}, nil
 	}
 
+	filterFriends := bson.M{"_id": bson.M{"$in": user.Friends}}
+
 	// Find all friends by their ObjectIDs
-	cursor, err := userCollection.Find(context.Background(), bson.M{"_id": bson.M{"$in": user.Friends}})
+	cursor, err := userCollection.Find(context.Background(), filterFriends)
 	if err != nil {
 		return nil, err
 	}
@@ -56,4 +61,31 @@ func GetUserFriendsFromDB(userID string) ([]models.User, error) {
 	}
 
 	return friends, nil
+}
+
+// Get all Users from Database except the one with the given userId
+func GetUsersFromDB(userId string) ([]models.User, error) {
+	client := config.GetMongoDBClient()
+	userCollection := client.Database("cosmic-gate-db").Collection("users")
+
+	objID, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.D{
+		{Key: "_id", Value: bson.D{{Key: "$ne", Value: objID}}},
+	}
+
+	cursor, err := userCollection.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+
+	var users []models.User
+	if err = cursor.All(context.TODO(), &users); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
