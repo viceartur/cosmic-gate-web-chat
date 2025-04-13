@@ -23,8 +23,6 @@ export const authUser = async (email: string, password: string) => {
 };
 
 // Sign Up a new User
-// Verify that an Account doesn't exist
-// Create an Account
 export const signUp = async ({
   email,
   password,
@@ -34,11 +32,13 @@ export const signUp = async ({
   password: string;
   username: string;
 }) => {
+  // Verify that an Account doesn't exist
   const foundUser = await fetch(`${API}/users?email=${email}`);
   if (foundUser.ok) {
     throw new Error("User already exists. Please Log In using credentials");
   }
 
+  // Create an Account
   const newUser = await fetch(`${API}/users`, {
     method: "POST",
     body: JSON.stringify({ email, username, password }),

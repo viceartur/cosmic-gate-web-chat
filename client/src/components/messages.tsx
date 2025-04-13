@@ -81,7 +81,9 @@ export default function Messages(props: any) {
           <div
             key={i}
             className={`messages__message ${
-              m.senderId === userId
+              m.data === "joined to the chat"
+                ? "messages__message--connected"
+                : m.senderId === userId
                 ? "messages__message--sent"
                 : "messages__message--received"
             }`}

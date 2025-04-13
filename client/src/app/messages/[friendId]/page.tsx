@@ -14,6 +14,7 @@ export default function MessagesPage() {
   useEffect(() => {
     if (!session?.user.id) return;
 
+    // Create WebSocket Instance
     const ws = new WebSocket(`ws://localhost:8080/ws/${session.user.id}`);
 
     // Send WebSocket to a Friend that the User connected to the chat
