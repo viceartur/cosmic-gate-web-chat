@@ -2,12 +2,12 @@ package main
 
 import (
 	"cosmic-gate-chat/config"
-	"cosmic-gate-chat/controllers"
+	"cosmic-gate-chat/handlers"
 	"cosmic-gate-chat/websocket"
 	"log"
 	"net/http"
 
-	"github.com/gorilla/handlers"
+	serverHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
@@ -22,24 +22,24 @@ func main() {
 
 	// Routes Setting
 	router := mux.NewRouter()
-	origins := handlers.AllowedOrigins([]string{"*"})
-	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"})
-	headers := handlers.AllowedHeaders([]string{"Content-Type", "Authorization"})
+	origins := serverHandlers.AllowedOrigins([]string{"*"})
+	methods := serverHandlers.AllowedMethods([]string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"})
+	headers := serverHandlers.AllowedHeaders([]string{"Content-Type", "Authorization"})
 
 	// Routes
-	router.HandleFunc("/auth", controllers.AuthUser).Methods("POST")
+	router.HandleFunc("/auth", handlers.AuthUserHandler).Methods("POST")
 
-	router.HandleFunc("/users", controllers.CreateUser).Methods("POST")
-	router.HandleFunc("/users", controllers.GetUser).Methods("GET")
-	router.HandleFunc("/users/all/{userId}", controllers.GetAllUsers).Methods("GET")
+	router.HandleFunc("/users", handlers.CreateUserHandler).Methods("POST")
+	router.HandleFunc("/users", handlers.GetUserHandler).Methods("GET")
+	router.HandleFunc("/users/all/{userId}", handlers.GetAllUsersHandler).Methods("GET")
+	router.HandleFunc("/user/friends", handlers.GetUserFriendsHandler).Methods("GET")
+	router.HandleFunc("/users/friends", handlers.SendFriendRequestHandler).Methods("POST")
 
-	router.HandleFunc("/user/friends", controllers.GetUserFriends).Methods("GET")
-
-	router.HandleFunc("/messages", controllers.GetMessages).Methods("GET")
+	router.HandleFunc("/messages", handlers.GetMessagesHandler).Methods("GET")
 
 	// WebSocket
 	router.HandleFunc("/ws/{senderId}", websocket.HandleWebSocket)
 
 	log.Println("Server running on port: 8080")
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(origins, methods, headers)(router)))
+	log.Fatal(http.ListenAndServe(":8080", serverHandlers.CORS(origins, methods, headers)(router)))
 }

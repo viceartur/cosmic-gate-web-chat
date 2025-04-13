@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 )
 
 // Get Messages from DB for all SenderID-RecipientID combinations
-func GetMessages(w http.ResponseWriter, r *http.Request) {
+func GetMessagesHandler(w http.ResponseWriter, r *http.Request) {
 	client := config.GetMongoDBClient()
 	messageCollection := client.Database("cosmic-gate-db").Collection("messages")
 

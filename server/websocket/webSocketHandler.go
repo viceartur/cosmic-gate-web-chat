@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -62,14 +63,12 @@ func reader(userId string, conn *websocket.Conn) {
 		_, p, err := conn.ReadMessage()
 		if err != nil {
 			log.Println("ReadMessage error:", err)
-
 			// Check whether the User Connection exists
 			if _, ok := clients[userId]; ok {
 				clients[userId].Close() // close connection
 				delete(clients, userId) // remove connection
 				log.Println("Client closed and removed: ", userId)
 			}
-
 			return
 		}
 
@@ -85,11 +84,13 @@ func reader(userId string, conn *websocket.Conn) {
 			handleChatConnection(userId, message)
 		} else if message.Type == "chat-message" {
 			handleChatMessage(userId, message)
+		} else if message.Type == "friend-request-sent" {
+			handleFriendRequestSent(userId, message)
 		}
 	}
 }
 
-// Notify the Client that Recipient connected to the chat.
+// Notify the Client that Recipient connected to the chat
 func handleChatConnection(userId string, message MessageWS) {
 	clientsMutex.Lock()
 	defer clientsMutex.Unlock()
@@ -113,14 +114,14 @@ func handleChatConnection(userId string, message MessageWS) {
 		return
 	}
 
-	// Send Notification to the Recipient
+	// Send Message to the Recipient
 	err = client.WriteMessage(websocket.TextMessage, jsonMessage)
 	if err != nil {
 		log.Println("WS Broadcast WriteMessage error:", err)
 	}
 }
 
-// Send Message from the Client to Recipient.
+// Send Message from the Client to Recipient
 func handleChatMessage(userId string, message MessageWS) {
 	clientsMutex.Lock()
 	defer clientsMutex.Unlock()
@@ -151,5 +152,43 @@ func handleChatMessage(userId string, message MessageWS) {
 	if err != nil {
 		log.Println("WS Broadcast WriteMessage error:", err)
 
+	}
+}
+
+// Send a Friend Request from the Client to Recipient
+func handleFriendRequestSent(userId string, message MessageWS) {
+	clientsMutex.Lock()
+	defer clientsMutex.Unlock()
+
+	// Check the User Number of Friend Requests
+	friend, err := services.GetUserById(message.RecipientID)
+	if err != nil {
+		return
+	}
+	numFriendRequests := strconv.Itoa(len(friend.FriendRequests))
+
+	// Convert Friend Request into JSON
+	friendRequest := MessageWS{
+		Type:        "friend-requests",
+		SenderID:    userId,
+		RecipientID: message.RecipientID,
+		Data:        numFriendRequests,
+	}
+	jsonFriendReq, err := json.Marshal(friendRequest)
+	if err != nil {
+		log.Println(err)
+	}
+
+	// Find a Recipient in the Connections
+	client, ok := clients[message.RecipientID]
+	if !ok {
+		log.Println("Recipient not connected yet. ID:", message.RecipientID)
+		return
+	}
+
+	// Send Message to the Recipient
+	err = client.WriteMessage(websocket.TextMessage, jsonFriendReq)
+	if err != nil {
+		log.Println("WS Broadcast WriteMessage error:", err)
 	}
 }

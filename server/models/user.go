@@ -14,3 +14,8 @@ type User struct {
 	Friends        []primitive.ObjectID `bson:"friends" json:"friends"`
 	CreatedAt      primitive.DateTime   `bson:"createdAt" json:"createdAt"`
 }
+
+type FriendRequest struct {
+	UserID   string `bson:"userId" json:"userId"`
+	FriendID string `bson:"friendId" json:"friendId"`
+}

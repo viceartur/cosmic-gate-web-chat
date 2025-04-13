@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"cosmic-gate-chat/models"
@@ -22,14 +22,14 @@ func CheckPasswordHash(password, hash string) bool {
 }
 
 // Authenticate an User Account
-func AuthUser(w http.ResponseWriter, r *http.Request) {
+func AuthUserHandler(w http.ResponseWriter, r *http.Request) {
 	var userRequest models.User
 	if err := json.NewDecoder(r.Body).Decode(&userRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	foundUser, err := services.GetUserFromDB(userRequest.Email)
+	foundUser, err := services.GetUserByEmail(userRequest.Email)
 	if foundUser.Email == "" || err != nil {
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
@@ -42,9 +42,10 @@ func AuthUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userData := &models.User{
-		ID:       foundUser.ID,
-		Email:    foundUser.Email,
-		Username: foundUser.Username,
+		ID:             foundUser.ID,
+		Email:          foundUser.Email,
+		Username:       foundUser.Username,
+		FriendRequests: foundUser.FriendRequests,
 	}
 
 	w.WriteHeader(http.StatusCreated)

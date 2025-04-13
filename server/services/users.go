@@ -4,13 +4,14 @@ import (
 	"context"
 	"cosmic-gate-chat/config"
 	"cosmic-gate-chat/models"
+	"errors"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Get User from Database by Email
-func GetUserFromDB(email string) (models.User, error) {
+func GetUserByEmail(email string) (models.User, error) {
 	client := config.GetMongoDBClient()
 	userCollection := client.Database("cosmic-gate-db").Collection("users")
 
@@ -24,8 +25,28 @@ func GetUserFromDB(email string) (models.User, error) {
 	return user, nil
 }
 
+// Get User from Database by ID
+func GetUserById(userId string) (models.User, error) {
+	client := config.GetMongoDBClient()
+	userCollection := client.Database("cosmic-gate-db").Collection("users")
+
+	userObjId, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	var user models.User
+	filter := bson.M{"_id": userObjId}
+	err = userCollection.FindOne(context.Background(), filter).Decode(&user)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
 // Get User Friends by their ObjectID
-func GetUserFriendsFromDB(userID string) ([]models.User, error) {
+func GetUserFriends(userID string) ([]models.User, error) {
 	client := config.GetMongoDBClient()
 	userCollection := client.Database("cosmic-gate-db").Collection("users")
 
@@ -64,7 +85,7 @@ func GetUserFriendsFromDB(userID string) ([]models.User, error) {
 }
 
 // Get all Users from Database except the one with the given userId
-func GetUsersFromDB(userId string) ([]models.User, error) {
+func GetUsers(userId string) ([]models.User, error) {
 	client := config.GetMongoDBClient()
 	userCollection := client.Database("cosmic-gate-db").Collection("users")
 
@@ -88,4 +109,42 @@ func GetUsersFromDB(userId string) ([]models.User, error) {
 	}
 
 	return users, nil
+}
+
+func SendFriendRequest(userId string, friendId string) error {
+	if userId == "" || friendId == "" {
+		return errors.New("User ID and Friend ID cannot be empty")
+	}
+
+	client := config.GetMongoDBClient()
+	userCollection := client.Database("cosmic-gate-db").Collection("users")
+
+	ctx := context.Background()
+	defer ctx.Done()
+
+	// Convert string IDs to ObjectIDs
+	userObjId, err := primitive.ObjectIDFromHex(userId)
+	friendObjId, err := primitive.ObjectIDFromHex(friendId)
+	if err != nil {
+		return err
+	}
+
+	// Check if friendId user exists
+	filter := bson.M{"_id": friendObjId}
+	update := bson.M{
+		"$addToSet": bson.M{
+			"friendRequests": userObjId, // Adds userId if not already present
+		},
+	}
+
+	updatedResult, err := userCollection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	if updatedResult.MatchedCount == 0 {
+		return errors.New("Friend user not found")
+	}
+
+	return nil
 }
