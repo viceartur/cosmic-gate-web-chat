@@ -3,7 +3,7 @@ import { API } from "@/utils/constants";
 // Fetch User Friends
 export async function fetchUserFriends(userId: string) {
   try {
-    const result = await fetch(`${API}/user/friends?userId=${userId}`);
+    const result = await fetch(`${API}/users/friends?userId=${userId}`);
     const friends = await result.json();
     if (!friends?.length) {
       return [];
@@ -35,7 +35,7 @@ export async function fetchUsers(userId: string) {
 // Send a Friend Request to a User
 export async function sendFriendRequest(userId: string, friendId: string) {
   try {
-    const result = await fetch(`${API}/users/friends`, {
+    const result = await fetch(`${API}/users/friend-requests`, {
       method: "POST",
       body: JSON.stringify({ userId, friendId }),
     });
@@ -63,5 +63,51 @@ export async function fetchUserById(userId: string) {
   } catch (error) {
     console.log(error);
     return {};
+  }
+}
+
+// Fetch User Friend Requests
+export async function fetchUserFriendRequests(userId: string) {
+  try {
+    const result = await fetch(`${API}/users/friend-requests?userId=${userId}`);
+    const friendRequestSenders = await result.json();
+    if (!friendRequestSenders?.length) {
+      return [];
+    }
+
+    return friendRequestSenders;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+// Accept a Friend Request
+export async function acceptFriendRequest(userId: string, friendId: string) {
+  try {
+    const result = await fetch(`${API}/friend-request/accept`, {
+      method: "POST",
+      body: JSON.stringify({ userId, friendId }),
+    });
+    if (!result.ok) {
+      throw new Error("Failed to accept a friend request");
+    }
+  } catch (error) {
+    throw new Error("Failed to accept a friend request: " + error);
+  }
+}
+
+// Decline a Friend Request
+export async function declineFriendRequest(userId: string, friendId: string) {
+  try {
+    const result = await fetch(`${API}/friend-request/decline`, {
+      method: "POST",
+      body: JSON.stringify({ userId, friendId }),
+    });
+    if (!result.ok) {
+      throw new Error("Failed to decline a friend request");
+    }
+  } catch (error) {
+    throw new Error("Failed to decline a friend request: " + error);
   }
 }

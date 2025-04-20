@@ -26,7 +26,7 @@ export default function UsersPage() {
   useEffect(() => {
     if (!session?.user.id) return;
 
-    // Open WebSocket
+    // Create WebSocket instance
     const ws = new WebSocket(`ws://localhost:8080/ws/${session.user.id}`);
     ws.onclose = () => {
       console.log("WebSocket connection has been closed.");
