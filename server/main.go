@@ -32,8 +32,12 @@ func main() {
 	router.HandleFunc("/users", handlers.CreateUserHandler).Methods("POST")
 	router.HandleFunc("/users", handlers.GetUserHandler).Methods("GET")
 	router.HandleFunc("/users/all/{userId}", handlers.GetAllUsersHandler).Methods("GET")
-	router.HandleFunc("/user/friends", handlers.GetUserFriendsHandler).Methods("GET")
-	router.HandleFunc("/users/friends", handlers.SendFriendRequestHandler).Methods("POST")
+	router.HandleFunc("/users/friends", handlers.GetUserFriendsHandler).Methods("GET")
+	router.HandleFunc("/users/friend-requests", handlers.SendFriendRequestHandler).Methods("POST")
+	router.HandleFunc("/users/friend-requests", handlers.GetUserFriendRequestsHandler).Methods("GET")
+
+	router.HandleFunc("/friend-request/accept", handlers.AcceptFriendRequestHandler).Methods("POST")
+	router.HandleFunc("/friend-request/decline", handlers.DeclineFriendRequestHandler).Methods("POST")
 
 	router.HandleFunc("/messages", handlers.GetMessagesHandler).Methods("GET")
 

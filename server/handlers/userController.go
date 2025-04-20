@@ -110,3 +110,43 @@ func SendFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode("Friend request sent")
 }
+
+// Get all User Friend Requests
+func GetUserFriendRequestsHandler(w http.ResponseWriter, r *http.Request) {
+	userId := r.URL.Query().Get("userId")
+	user, err := services.GetUserFriendRequests(userId)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error getting user: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(user)
+}
+
+// Accept Friend Request from a User
+func AcceptFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
+	var friendRequest models.FriendRequest
+	json.NewDecoder(r.Body).Decode(&friendRequest)
+
+	err := services.AcceptFriendRequest(friendRequest.UserID, friendRequest.FriendID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error adding user to friends: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode("Friend Request accepted")
+}
+
+// Decline Friend Request from a User
+func DeclineFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
+	var friendRequest models.FriendRequest
+	json.NewDecoder(r.Body).Decode(&friendRequest)
+
+	err := services.DeclineFriendRequest(friendRequest.UserID, friendRequest.FriendID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error declining a friend request: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode("Friend Request declined")
+}

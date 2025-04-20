@@ -111,6 +111,7 @@ func GetUsers(userId string) ([]models.User, error) {
 	return users, nil
 }
 
+// Send a Friend Request to a User
 func SendFriendRequest(userId string, friendId string) error {
 	if userId == "" || friendId == "" {
 		return errors.New("User ID and Friend ID cannot be empty")
@@ -144,6 +145,146 @@ func SendFriendRequest(userId string, friendId string) error {
 
 	if updatedResult.MatchedCount == 0 {
 		return errors.New("Friend user not found")
+	}
+
+	return nil
+}
+
+// Get User Friend Requests by their ObjectID
+func GetUserFriendRequests(userId string) ([]models.User, error) {
+	client := config.GetMongoDBClient()
+	userCollection := client.Database("cosmic-gate-db").Collection("users")
+
+	objID, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	// Find the user and get their friend requests
+	var user models.User
+	filterUser := bson.M{"_id": objID}
+	err = userCollection.FindOne(context.Background(), filterUser).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(user.FriendRequests) == 0 {
+		return []models.User{}, nil
+	}
+
+	filterFriendRequests := bson.M{"_id": bson.M{"$in": user.FriendRequests}}
+
+	// Find all Users from Friend Requests by their ObjectIDs
+	cursor, err := userCollection.Find(context.Background(), filterFriendRequests)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background())
+
+	var friends []models.User
+	if err := cursor.All(context.Background(), &friends); err != nil {
+		return nil, err
+	}
+
+	return friends, nil
+}
+
+// Accept a friend request between two users
+func AcceptFriendRequest(userId string, friendId string) error {
+	if userId == "" || friendId == "" {
+		return errors.New("User ID and Friend ID cannot be empty")
+	}
+
+	client := config.GetMongoDBClient()
+	userCollection := client.Database("cosmic-gate-db").Collection("users")
+
+	ctx := context.Background()
+	defer ctx.Done()
+
+	// Convert to ObjectIDs
+	userObjId, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		return err
+	}
+
+	friendObjId, err := primitive.ObjectIDFromHex(friendId)
+	if err != nil {
+		return err
+	}
+
+	// Update user: remove from friendRequests, add to friends
+	userUpdate := bson.M{
+		"$pull": bson.M{
+			"friendRequests": friendObjId,
+		},
+		"$addToSet": bson.M{
+			"friends": friendObjId,
+		},
+	}
+
+	userResult, err := userCollection.UpdateByID(ctx, userObjId, userUpdate)
+	if err != nil {
+		return err
+	}
+	if userResult.MatchedCount == 0 {
+		return errors.New("User not found")
+	}
+
+	// Update friend: add user to their friends
+	friendUpdate := bson.M{
+		"$addToSet": bson.M{
+			"friends": userObjId,
+		},
+	}
+
+	friendResult, err := userCollection.UpdateByID(ctx, friendObjId, friendUpdate)
+	if err != nil {
+		return err
+	}
+	if friendResult.MatchedCount == 0 {
+		return errors.New("Friend user not found")
+	}
+
+	return nil
+}
+
+// Remove a friend request without adding to friends
+func DeclineFriendRequest(userId string, friendId string) error {
+	if userId == "" || friendId == "" {
+		return errors.New("User ID and Friend ID cannot be empty")
+	}
+
+	client := config.GetMongoDBClient()
+	userCollection := client.Database("cosmic-gate-db").Collection("users")
+
+	ctx := context.Background()
+	defer ctx.Done()
+
+	// Convert to ObjectIDs
+	userObjId, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		return err
+	}
+
+	friendObjId, err := primitive.ObjectIDFromHex(friendId)
+	if err != nil {
+		return err
+	}
+
+	// Remove friendId from userId's friendRequests
+	update := bson.M{
+		"$pull": bson.M{
+			"friendRequests": friendObjId,
+		},
+	}
+
+	result, err := userCollection.UpdateByID(ctx, userObjId, update)
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return errors.New("User not found")
 	}
 
 	return nil

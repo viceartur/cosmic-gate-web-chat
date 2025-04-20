@@ -1,41 +1,20 @@
 package handlers
 
 import (
-	"context"
-	"cosmic-gate-chat/config"
-	"cosmic-gate-chat/models"
+	"cosmic-gate-chat/services"
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 // Get Messages from DB for all SenderID-RecipientID combinations
 func GetMessagesHandler(w http.ResponseWriter, r *http.Request) {
-	client := config.GetMongoDBClient()
-	messageCollection := client.Database("cosmic-gate-db").Collection("messages")
-
 	senderId := r.URL.Query().Get("senderId")
 	recipientId := r.URL.Query().Get("recipientId")
 
-	// Find all messages for users
-	cursor, err := messageCollection.Find(context.Background(), bson.M{
-		"$or": []bson.M{
-			{"senderId": senderId, "recipientId": recipientId},
-			{"senderId": recipientId, "recipientId": senderId},
-		},
-	})
+	messages, err := services.GetMessages(senderId, recipientId)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error fetching messages: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	// Decode documents into results
-	var messages []models.Message
-	err = cursor.All(context.Background(), &messages)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error decoding messages: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error getting messages: %v", err), http.StatusInternalServerError)
 		return
 	}
 
