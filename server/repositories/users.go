@@ -1,14 +1,47 @@
-package services
+package repositories
 
 import (
 	"context"
 	"cosmic-gate-chat/config"
 	"cosmic-gate-chat/models"
 	"errors"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
+
+// Create User in the Database
+func CreateUser(userRequest models.User) (*mongo.InsertOneResult, error) {
+	client := config.GetMongoDBClient()
+	userCollection := client.Database("cosmic-gate-db").Collection("users")
+
+	ctx := context.Background()
+	defer ctx.Done()
+
+	hashPassword, err := HashPassword(userRequest.Password)
+	if err != nil {
+		return &mongo.InsertOneResult{}, err
+	}
+
+	user := &models.User{
+		Username:       userRequest.Username,
+		Email:          userRequest.Email,
+		Password:       hashPassword,
+		FriendRequests: []primitive.ObjectID{},
+		Friends:        []primitive.ObjectID{},
+		CreatedAt:      primitive.NewDateTimeFromTime(time.Now()),
+	}
+
+	// Insert into MongoDB
+	result, err := userCollection.InsertOne(context.Background(), user)
+	if err != nil {
+		return &mongo.InsertOneResult{}, err
+	}
+
+	return result, nil
+}
 
 // Get User from Database by Email
 func GetUserByEmail(email string) (models.User, error) {
@@ -43,6 +76,83 @@ func GetUserById(userId string) (models.User, error) {
 	}
 
 	return user, nil
+}
+
+// Update User fields provided in the Database
+func UpdateUser(userData models.User) error {
+	if userData.ID.IsZero() {
+		return errors.New("No User ID provided")
+	}
+
+	client := config.GetMongoDBClient()
+	userCollection := client.Database("cosmic-gate-db").Collection("users")
+
+	ctx := context.Background()
+	defer ctx.Done()
+
+	updateFields := bson.M{}
+	orFilters := bson.A{}
+
+	// Prepare OR conditions if username or email is provided
+	if userData.Username != "" {
+		orFilters = append(orFilters, bson.M{
+			"username": userData.Username,
+			"_id":      bson.M{"$ne": userData.ID},
+		})
+	}
+
+	if userData.Email != "" {
+		orFilters = append(orFilters, bson.M{
+			"email": userData.Email,
+			"_id":   bson.M{"$ne": userData.ID},
+		})
+	}
+
+	// Check if any conflicts exist
+	if len(orFilters) > 0 {
+		count, err := userCollection.CountDocuments(ctx, bson.M{"$or": orFilters})
+		if err != nil {
+			return err
+		}
+		if count > 0 {
+			return errors.New("Username or email already taken")
+		}
+	}
+
+	// Prepare fields to update
+	if userData.Username != "" {
+		updateFields["username"] = userData.Username
+	}
+
+	if userData.Email != "" {
+		updateFields["email"] = userData.Email
+	}
+
+	if userData.Password != "" {
+		hashPassword, err := HashPassword(userData.Password)
+		if err != nil {
+			return err
+		}
+		updateFields["password"] = hashPassword
+	}
+
+	if userData.Bio != "" {
+		updateFields["bio"] = userData.Bio
+	}
+
+	// No fields to update
+	if len(updateFields) == 0 {
+		return nil
+	}
+
+	update := bson.M{"$set": updateFields}
+	_, err := userCollection.UpdateOne(
+		ctx,
+		bson.M{"_id": userData.ID},
+		update,
+	)
+
+	return err
 }
 
 // Get User Friends by their ObjectID

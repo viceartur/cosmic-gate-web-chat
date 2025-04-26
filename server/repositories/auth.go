@@ -1,10 +1,8 @@
-package handlers
+package repositories
 
 import (
 	"cosmic-gate-chat/models"
-	"cosmic-gate-chat/services"
-	"encoding/json"
-	"net/http"
+	"errors"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -21,24 +19,15 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-// Authenticate an User Account
-func AuthUserHandler(w http.ResponseWriter, r *http.Request) {
-	var userRequest models.User
-	if err := json.NewDecoder(r.Body).Decode(&userRequest); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	foundUser, err := services.GetUserByEmail(userRequest.Email)
+func AuthUser(userRequest models.User) (*models.User, error) {
+	foundUser, err := GetUserByEmail(userRequest.Email)
 	if foundUser.Email == "" || err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
-		return
+		return &models.User{}, errors.New("User Not Found")
 	}
 
 	ok := CheckPasswordHash(userRequest.Password, foundUser.Password)
 	if !ok {
-		http.Error(w, "Invalid password", http.StatusUnauthorized)
-		return
+		return &models.User{}, errors.New("Wrong Password")
 	}
 
 	userData := &models.User{
@@ -47,7 +36,5 @@ func AuthUserHandler(w http.ResponseWriter, r *http.Request) {
 		Username:       foundUser.Username,
 		FriendRequests: foundUser.FriendRequests,
 	}
-
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(userData)
+	return userData, nil
 }

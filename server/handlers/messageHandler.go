@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"cosmic-gate-chat/services"
+	"cosmic-gate-chat/repositories"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -12,7 +12,7 @@ func GetMessagesHandler(w http.ResponseWriter, r *http.Request) {
 	senderId := r.URL.Query().Get("senderId")
 	recipientId := r.URL.Query().Get("recipientId")
 
-	messages, err := services.GetMessages(senderId, recipientId)
+	messages, err := repositories.GetMessages(senderId, recipientId)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error getting messages: %v", err), http.StatusInternalServerError)
 		return

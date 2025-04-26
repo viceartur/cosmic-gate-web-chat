@@ -31,6 +31,7 @@ func main() {
 
 	router.HandleFunc("/users", handlers.CreateUserHandler).Methods("POST")
 	router.HandleFunc("/users", handlers.GetUserHandler).Methods("GET")
+	router.HandleFunc("/users", handlers.UpdateUserHandler).Methods("PATCH")
 	router.HandleFunc("/users/all/{userId}", handlers.GetAllUsersHandler).Methods("GET")
 	router.HandleFunc("/users/friends", handlers.GetUserFriendsHandler).Methods("GET")
 	router.HandleFunc("/users/friend-requests", handlers.SendFriendRequestHandler).Methods("POST")

@@ -2,7 +2,8 @@ package websocket
 
 import (
 	"cosmic-gate-chat/models"
-	"cosmic-gate-chat/services"
+	"cosmic-gate-chat/repositories"
+
 	"encoding/json"
 	"log"
 	"net/http"
@@ -138,7 +139,7 @@ func handleChatMessage(userId string, message MessageWS) {
 		Text:        message.Data,
 		SentAt:      time.Now(),
 	}
-	go services.SaveMessage(messageToSave)
+	go repositories.SaveMessage(messageToSave)
 
 	// Find a Recipient in the Connections
 	client, ok := clients[message.RecipientID]
@@ -161,7 +162,7 @@ func handleFriendRequestSent(userId string, message MessageWS) {
 	defer clientsMutex.Unlock()
 
 	// Check the User Number of Friend Requests
-	friend, err := services.GetUserById(message.RecipientID)
+	friend, err := repositories.GetUserById(message.RecipientID)
 	if err != nil {
 		return
 	}

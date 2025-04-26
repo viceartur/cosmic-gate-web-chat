@@ -1,49 +1,27 @@
 package handlers
 
 import (
-	"context"
-	"cosmic-gate-chat/config"
 	"cosmic-gate-chat/models"
-	"cosmic-gate-chat/services"
+	"cosmic-gate-chat/repositories"
+	"cosmic-gate-chat/utils"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Add New User to the Database
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
-	client := config.GetMongoDBClient()
-	userCollection := client.Database("cosmic-gate-db").Collection("users")
-
 	var userRequest models.User
 	if err := json.NewDecoder(r.Body).Decode(&userRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	hashPassword, err := HashPassword(userRequest.Password)
+	result, err := repositories.CreateUser(userRequest)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error hashing a password: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	user := &models.User{
-		Username:       userRequest.Username,
-		Email:          userRequest.Email,
-		Password:       hashPassword,
-		FriendRequests: []primitive.ObjectID{},
-		Friends:        []primitive.ObjectID{},
-		CreatedAt:      primitive.NewDateTimeFromTime(time.Now()),
-	}
-
-	// Insert into MongoDB
-	result, err := userCollection.InsertOne(context.Background(), user)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error inserting user: %v", err), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -59,9 +37,9 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	var err error
 	if email != "" {
-		user, err = services.GetUserByEmail(email)
+		user, err = repositories.GetUserByEmail(email)
 	} else if userId != "" {
-		user, err = services.GetUserById(userId)
+		user, err = repositories.GetUserById(userId)
 	}
 
 	if err != nil {
@@ -72,10 +50,32 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
+// Update User data in the Database
+func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
+	var userData models.User
+	if err := json.NewDecoder(r.Body).Decode(&userData); err != nil {
+		utils.RespondWithJSON(w, http.StatusBadRequest, map[string]string{
+			"error": fmt.Sprintf("Invalid request: %v", err),
+		})
+		return
+	}
+
+	if err := repositories.UpdateUser(userData); err != nil {
+		utils.RespondWithJSON(w, http.StatusInternalServerError, map[string]string{
+			"error": fmt.Sprintf("Error updating user: %v", err),
+		})
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, map[string]string{
+		"message": "User updated successfully",
+	})
+}
+
 // Get User Friends from Database by User ID
 func GetUserFriendsHandler(w http.ResponseWriter, r *http.Request) {
 	userId := r.URL.Query().Get("userId")
-	user, err := services.GetUserFriends(userId)
+	user, err := repositories.GetUserFriends(userId)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error getting user: %v", err), http.StatusInternalServerError)
 		return
@@ -88,7 +88,7 @@ func GetUserFriendsHandler(w http.ResponseWriter, r *http.Request) {
 func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userId := vars["userId"]
-	users, err := services.GetUsers(userId)
+	users, err := repositories.GetUsers(userId)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error getting user: %v", err), http.StatusInternalServerError)
 		return
@@ -102,7 +102,7 @@ func SendFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
 	var friendRequest models.FriendRequest
 	json.NewDecoder(r.Body).Decode(&friendRequest)
 
-	err := services.SendFriendRequest(friendRequest.UserID, friendRequest.FriendID)
+	err := repositories.SendFriendRequest(friendRequest.UserID, friendRequest.FriendID)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error sending a friend request: %v", err), http.StatusInternalServerError)
 		return
@@ -114,7 +114,7 @@ func SendFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
 // Get all User Friend Requests
 func GetUserFriendRequestsHandler(w http.ResponseWriter, r *http.Request) {
 	userId := r.URL.Query().Get("userId")
-	user, err := services.GetUserFriendRequests(userId)
+	user, err := repositories.GetUserFriendRequests(userId)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error getting user: %v", err), http.StatusInternalServerError)
 		return
@@ -128,7 +128,7 @@ func AcceptFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
 	var friendRequest models.FriendRequest
 	json.NewDecoder(r.Body).Decode(&friendRequest)
 
-	err := services.AcceptFriendRequest(friendRequest.UserID, friendRequest.FriendID)
+	err := repositories.AcceptFriendRequest(friendRequest.UserID, friendRequest.FriendID)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error adding user to friends: %v", err), http.StatusInternalServerError)
 		return
@@ -142,7 +142,7 @@ func DeclineFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
 	var friendRequest models.FriendRequest
 	json.NewDecoder(r.Body).Decode(&friendRequest)
 
-	err := services.DeclineFriendRequest(friendRequest.UserID, friendRequest.FriendID)
+	err := repositories.DeclineFriendRequest(friendRequest.UserID, friendRequest.FriendID)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error declining a friend request: %v", err), http.StatusInternalServerError)
 		return
