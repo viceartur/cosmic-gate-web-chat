@@ -28,7 +28,7 @@ export default function FriendsPage() {
           <div key={i} className="user-card">
             <span className="user-name">{friend.username}</span>
             <div className="user-actions__buttons">
-              <button onClick={() => redirect(`/profiles/${friend.id}`)}>
+              <button onClick={() => redirect(`/profile/${friend.id}`)}>
                 Profile
               </button>
               <button

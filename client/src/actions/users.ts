@@ -57,6 +57,7 @@ export async function fetchUserById(userId: string) {
       email: user.email,
       username: user.username,
       friendRequests: user.friendRequests,
+      bio: user.bio,
     };
 
     return userData;
@@ -109,5 +110,34 @@ export async function declineFriendRequest(userId: string, friendId: string) {
     }
   } catch (error) {
     throw new Error("Failed to decline a friend request: " + error);
+  }
+}
+
+// Update User Data
+export async function updateUserData(userId: string, formData: FormData) {
+  try {
+    const result = await fetch(`${API}/users`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: userId,
+        email: formData.get("email"),
+        username: formData.get("username"),
+        bio: formData.get("bio"),
+        password: formData.get("password"),
+      }),
+    });
+
+    const data = await result.json();
+
+    if (!result.ok) {
+      throw new Error(data.error || `Server Error: ${result.status}`);
+    }
+
+    return data;
+  } catch (error: any) {
+    throw new Error(error.message);
   }
 }

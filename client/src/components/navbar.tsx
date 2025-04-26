@@ -54,7 +54,9 @@ export function NavBar() {
       <Link href="/">Main</Link>
       <Link href="/profile">Profile</Link>
       <Link href="/users">People</Link>
-      <Link href="/friend-requests">Friend Requests ({numFriendRequests})</Link>
+      <Link href="/friend-requests">
+        Friend Requests {numFriendRequests ? " (new)" : ""}
+      </Link>
       <Link href="/friends">Friends</Link>
       {session?.user && <button onClick={() => signOut()}>Sign Out</button>}
     </nav>
