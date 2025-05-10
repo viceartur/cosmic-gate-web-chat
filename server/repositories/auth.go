@@ -19,6 +19,7 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
+// Authenticate User
 func AuthUser(userRequest models.User) (*models.User, error) {
 	foundUser, err := GetUserByEmail(userRequest.Email)
 	if foundUser.Email == "" || err != nil {

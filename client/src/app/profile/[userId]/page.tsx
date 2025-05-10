@@ -39,7 +39,7 @@ export default function UserProfilePage() {
         </div>
         <div>
           <label>Bio:</label>
-          <p>{userData.bio}</p>
+          <p>{userData.bio || "no bio yet..."}</p>
         </div>
       </div>
     </section>
